@@ -8,6 +8,7 @@ use App\Models\Voucher;
 use App\Services\VoucherService;
 use App\Notifications\WelcomeEmailNotification;
 use Hash;
+use Auth;
 
 class AuthController extends Controller
 {
@@ -42,5 +43,35 @@ class AuthController extends Controller
             'message' => 'User registered successfully!',
             'token' => $token,
         ]);
+    }
+
+    public function login(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'email' => 'required|email',
+                'password' => 'required|min:6',
+            ]);
+
+            if (!Auth::attempt(['email' => $validated['email'], 'password' => $validated['password']])) {
+                return response()->json(['message' => 'Invalid credentials'], 401);
+            }
+
+            $user = Auth::user();
+
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            return response()->json([
+                'message' => 'Login successful',
+                'user' => $user,
+                'token' => $token
+            ], 200);
+            
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        }
     }
 }
