@@ -36,7 +36,7 @@ class AuthController extends Controller
         
         $voucher = $this->voucherService->generate($user);
 
-        // $user->notify(new WelcomeEmailNotification($voucher->code));
+        $user->notify(new WelcomeEmailNotification($voucher->code));
         $token = $user->createToken('auth_token')->plainTextToken;
         return response()->json([
             'message' => 'User registered successfully!',
